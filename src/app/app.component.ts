@@ -4,6 +4,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouterOutlet } from '@angular/router';
+import { ReversePipe } from './reverse.pipe';
 
 interface User {
   id: number;
@@ -14,17 +15,21 @@ interface User {
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [FormsModule, CommonModule, RouterOutlet, HttpClientModule,],
+  imports: [FormsModule, CommonModule, RouterOutlet, HttpClientModule, ReversePipe],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.css',
 })
+  
 export class AppComponent implements OnInit {
   title = 'my-app';
   newString = "JASON";
-  convertString = '';
+  convertString = 'JASON';
   users: User[] = [];
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient, 
+    private reversePipe: ReversePipe
+  ) { }
 
   ngOnInit() {
     this.getUsersOriginal();
@@ -46,15 +51,7 @@ export class AppComponent implements OnInit {
       (result) => {
         this.users = result;
         this.users.forEach(item => {
-          this.http.get<string>(`http://localhost:5001/weatherforecast/ReverseString?input=${item.name}`, httpOptions).subscribe(result => {
-          item.name = result;
-      return result;
-    },
-      (error) => {
-        console.error(error);
-        return ''
-      }
-    );
+          item.name = this.reversePipe.transform(item.name);
         });
       },
       (error) => {
